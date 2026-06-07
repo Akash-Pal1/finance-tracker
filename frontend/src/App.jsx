@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import axios from "axios"
 
-const API = "http://127.0.0.1:8000"
+const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
 
 export default function App() {
   const [transactions, setTransactions] = useState([])
@@ -42,6 +43,19 @@ export default function App() {
     fetchData()
   }
 
+  function buildChartData() {
+  const categoryMap = {}
+  transactions.forEach(t => {
+    if (t.type === "expense") {
+      categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount
+    }
+  })
+  return Object.entries(categoryMap).map(([category, amount]) => ({ category, amount }))
+}
+
+const chartData = buildChartData()
+const COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#ef4444"]
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto">
@@ -65,6 +79,26 @@ export default function App() {
             <p className="text-2xl font-bold text-red-600">₹{summary.total_expenses.toLocaleString()}</p>
           </div>
         </div>
+
+
+        {/* Spending by Category Chart */}
+        {chartData.length > 0 && (
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+            <h2 className="text-lg font-semibold text-gray-700 mb-4">Spending by Category</h2>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                <XAxis dataKey="category" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} />
+                <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+                  {chartData.map((_, index) => (
+                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
 
         {/* Add Transaction Form */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
