@@ -11,7 +11,11 @@ app = FastAPI(title="Finance Tracker API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+         "https://finance-tracker-app-sxsb.onrender.com",
+        "http://localhost:5173",
+        "http://localhost:5174"
+    ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
